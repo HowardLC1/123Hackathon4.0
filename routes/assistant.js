@@ -1,40 +1,44 @@
 const express = require('express');
-
 const router = express.Router();
 
-// Simple placeholder AI assistant endpoint.
-// In future you can replace logic here with a real LLM/API call.
+// Обработчик для ИИ-ассистента
 router.post('/', async (req, res) => {
   try {
     const { message, context } = req.body || {};
 
     if (!message || !String(message).trim()) {
-      return res.status(400).json({ reply: 'Please send a non-empty message.' });
+      return res.status(400).json({ reply: 'Пожалуйста, введите сообщение.' });
     }
 
     const trimmed = String(message).trim();
 
-    // Very small, friendly stub reply so UI feels alive.
+    // Заглушка ответа, чтобы интерфейс "ожил"
     let reply =
-      "I'm an assistant stub running locally. " +
-      "Right now I can’t access real AI, but I received your message and can help with basic guidance.\n\n" +
-      `You said: “${trimmed}”.\n\n` +
-      "Typical things I can help with here:\n" +
-      "- How to submit a complaint and what fields mean\n" +
-      "- How to track a ticket by ID\n" +
-      "- How admins log in, sign up, and update statuses\n\n" +
-      "For deeper AI answers you can later connect this endpoint to a real LLM.";
+      "Я — ваш виртуальный помощник. " +
+      "На данный момент я работаю в тестовом режиме, но я получил ваше сообщение и готов помочь с базовой навигацией.\n\n" +
+      `Вы написали: «${trimmed}».\n\n` +
+      "Чем я могу помочь:\n" +
+      "- Рассказать, как подать жалобу и что значат поля формы\n" +
+      "- Объяснить, как отследить статус по ID тикета\n" +
+      "- Помочь администраторам с входом и обновлением статусов\n\n" +
+      "Позже этот раздел будет подключен к полноценному искусственному интеллекту.";
 
     if (context && context.page) {
-      reply += `\n\nContext: you are on the “${context.page}” page.`;
+      // Переводим названия страниц для контекста, если нужно
+      const pageNames = {
+        'Citizen Complaint Submission': 'Подача жалобы',
+        'Track Complaint Status': 'Отслеживание статуса',
+        'Admin Dashboard - Complaints': 'Панель администратора'
+      };
+      const currentPage = pageNames[context.page] || context.page;
+      reply += `\n\nКонтекст: вы находитесь на странице «${currentPage}».`;
     }
 
     res.json({ reply });
   } catch (error) {
-    console.error('Assistant error:', error);
-    res.status(500).json({ reply: 'Internal error inside assistant endpoint.' });
+    console.error('Ошибка ассистента:', error);
+    res.status(500).json({ reply: 'Внутренняя ошибка сервера при обработке запроса ассистента.' });
   }
 });
 
 module.exports = router;
-
