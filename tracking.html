@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Track Complaint Status</title>
+  <title>Отследить статус жалобы</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -11,11 +11,11 @@
 
     <div class="nav">
       <div class="brand">
-        <b>Track your complaint</b>
-        <span>Enter your Ticket ID to see status and any response.</span>
+        <b>Отследить жалобу</b>
+        <span>Введите ID тикета, чтобы увидеть статус и ответ.</span>
       </div>
       <div class="nav-actions">
-        <button class="btn" onclick="window.location.href='index.html'">Home</button>
+        <button class="btn" onclick="window.location.href='index.html'">Главная</button>
       </div>
     </div>
 
@@ -23,10 +23,10 @@
       <section class="card pad">
         <form id="trackingForm" class="form">
           <div>
-            <label for="ticketId">Ticket ID</label>
+            <label for="ticketId">ID тикета</label>
             <input type="text" id="ticketId" placeholder="TKT1700000000000-1234" required />
           </div>
-          <button id="trackBtn" class="btn primary block" type="submit">Track</button>
+          <button id="trackBtn" class="btn primary block" type="submit">Отследить</button>
           <div id="statusResult" class="msg" style="display:none;"></div>
         </form>
       </section>
@@ -51,30 +51,52 @@
 
       try {
         btn.disabled = true;
-        btn.textContent = 'Loading...';
+        btn.textContent = 'Загрузка...';
 
         const response = await fetch(`${BASE_URL}/api/complaints/status/${ticketId}`);
         const contentType = response.headers.get("content-type");
 
         if (!response.ok) {
           const message = await response.text();
-          throw new Error(`Error ${response.status}: ${message}`);
+          // Перевод ошибки, если тикет не найден
+          const errorMsg = response.status === 404 ? "Тикет не найден" : message;
+          throw new Error(`Ошибка ${response.status}: ${errorMsg}`);
         }
 
         if (contentType && contentType.includes("application/json")) {
           const result = await response.json();
+          
+          // Словарь для перевода статусов и категорий
+          const translations = {
+            'Pending': 'В ожидании',
+            'In Progress': 'В работе',
+            'Resolved': 'Решено',
+            'Health': 'Здравоохранение',
+            'Education': 'Образование',
+            'Sport': 'Спорт'
+          };
+
+          const displayStatus = translations[result.status] || result.status;
+          const displayCategory = translations[result.category] || result.category;
+
           statusDiv.style.display = 'block';
           statusDiv.className = 'msg ok';
           statusDiv.innerHTML = `
-            <div><span class="pill">Ticket</span> ${result.ticketId}</div>
-            <div style="margin-top:6px;"><span class="pill">Status</span> ${result.status}</div>
-            <div style="margin-top:6px;"><span class="pill">Category</span> ${result.category}</div>
-            <div style="margin-top:6px;"><span class="pill">Submitted</span> ${new Date(result.submittedAt).toLocaleString()}</div>
-            ${result.responseNote ? `<div style="margin-top:10px;"><span class="pill">Response</span><div style="margin-top:6px; color:rgba(234,240,255,.85)">${result.responseNote}</div></div>` : ``}
+            <div><span class="pill">Тикет</span> ${result.ticketId}</div>
+            <div style="margin-top:6px;"><span class="pill">Статус</span> ${displayStatus}</div>
+            <div style="margin-top:6px;"><span class="pill">Категория</span> ${displayCategory}</div>
+            <div style="margin-top:6px;"><span class="pill">Дата подачи</span> ${new Date(result.submittedAt).toLocaleString('ru-RU')}</div>
+            ${result.responseNote ? `
+              <div style="margin-top:10px;">
+                <span class="pill">Ответ ведомства</span>
+                <div style="margin-top:6px; color:rgba(234,240,255,.85); line-height:1.4;">${result.responseNote}</div>
+              </div>` : `
+              <div style="margin-top:10px; color:var(--muted); font-size:12px;">Ответ пока не предоставлен.</div>
+            `}
           `;
         } else {
           const message = await response.text();
-          throw new Error(`Unexpected response format: ${message}`);
+          throw new Error(`Неподдерживаемый формат ответа: ${message}`);
         }
       } catch (error) {
         console.error(error);
@@ -83,7 +105,7 @@
         statusDiv.textContent = error.message;
       } finally {
         btn.disabled = false;
-        btn.textContent = 'Track';
+        btn.textContent = 'Отследить';
       }
     });
   </script>

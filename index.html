@@ -1,97 +1,97 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Citizen Complaint Submission</title>
+  <title>Подача обращения гражданина</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="container">
     <div class="nav">
       <div class="brand">
-        <b>Citizen Engagement</b>
-        <span>Submit a complaint, track progress, get responses.</span>
+        <b>Взаимодействие с гражданами</b>
+        <span>Подавайте обращения, отслеживайте прогресс, получайте ответы.</span>
       </div>
       <div class="nav-actions">
-        <button class="btn" onclick="window.location.href='tracking.html'">Track</button>
-        <button class="btn" onclick="window.location.href='admin.html'">Admin</button>
-        <button class="btn" onclick="window.location.href='admin-signup.html'">Create admin</button>
+        <button class="btn" onclick="window.location.href='tracking.html'">Отследить</button>
+        <button class="btn" onclick="window.location.href='admin.html'">Админ</button>
+        <button class="btn" onclick="window.location.href='admin-signup.html'">Создать админа</button>
       </div>
     </div>
 
     <div class="grid">
       <section class="card pad">
-        <h2 class="title">Submit a complaint</h2>
-        <p class="subtitle">You’ll receive a Ticket ID for tracking.</p>
+        <h2 class="title">Подать жалобу</h2>
+        <p class="subtitle">Вы получите ID тикета для отслеживания.</p>
 
         <form id="complaintForm" class="form" enctype="multipart/form-data" method="POST">
           <div class="row">
             <div>
-              <label for="fullName">Full name</label>
-              <input id="fullName" type="text" name="fullName" placeholder="Jane Doe" required />
+              <label for="fullName">ФИО</label>
+              <input id="fullName" type="text" name="fullName" placeholder="Иван Иванов" required />
             </div>
             <div>
-              <label for="email">Email</label>
-              <input id="email" type="email" name="email" placeholder="jane@example.com" required />
-            </div>
-          </div>
-
-          <div class="row">
-            <div>
-              <label for="phone">Phone (optional)</label>
-              <input id="phone" type="text" name="phone" placeholder="+1 555 000 0000" />
-            </div>
-            <div>
-              <label for="location">Location (optional)</label>
-              <input id="location" type="text" name="location" placeholder="City, District" />
+              <label for="email">Электронная почта</label>
+              <input id="email" type="email" name="email" placeholder="ivan@example.com" required />
             </div>
           </div>
 
           <div class="row">
             <div>
-              <label for="category">Category</label>
+              <label for="phone">Телефон (опционально)</label>
+              <input id="phone" type="text" name="phone" placeholder="+7 700 000 0000" />
+            </div>
+            <div>
+              <label for="location">Местоположение (опционально)</label>
+              <input id="location" type="text" name="location" placeholder="Город, район" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="category">Категория</label>
               <select id="category" name="category" required>
-                <option value="">Select category</option>
-                <option value="Health">Health</option>
-                <option value="Education">Education</option>
-                <option value="Sport">Sport</option>
+                <option value="">Выберите категорию</option>
+                <option value="Health">Здравоохранение</option>
+                <option value="Education">Образование</option>
+                <option value="Sport">Спорт</option>
+                <option value="Infrastructure">Инфраструктура</option>
               </select>
             </div>
             <div>
-              <label for="title">Title (optional)</label>
-              <input id="title" type="text" name="title" placeholder="Short summary" />
+              <label for="title">Заголовок (опционально)</label>
+              <input id="title" type="text" name="title" placeholder="Краткая суть" />
             </div>
           </div>
 
           <div>
-            <label for="description">Description</label>
-            <textarea id="description" name="description" placeholder="Describe what happened, where, and when." required></textarea>
+            <label for="description">Описание</label>
+            <textarea id="description" name="description" placeholder="Опишите, что произошло, где и когда." required></textarea>
           </div>
 
           <div>
-            <label for="attachment">Attachment (optional)</label>
+            <label for="attachment">Приложение (опционально)</label>
             <input id="attachment" type="file" name="attachment" />
-            <div class="hint">Photos or documents help resolve complaints faster.</div>
+            <div class="hint">Фото или документы помогают быстрее решить проблему.</div>
           </div>
 
-          <button id="submitBtn" class="btn primary block" type="submit">Submit</button>
+          <button id="submitBtn" class="btn primary block" type="submit">Отправить жалобу</button>
           <div id="submitMsg" class="msg" style="display:none;"></div>
         </form>
       </section>
 
       <aside class="card pad">
-        <h3 class="title">How it works</h3>
+        <h3 class="title">Как это работает</h3>
         <p class="subtitle">
-          Your complaint is routed to the right agency/department. Admins can update status and add a response note.
+          Ваша жалоба направляется в соответствующее ведомство или отдел. Администраторы обновляют статус и добавляют комментарии по мере работы.
         </p>
+        <hr style="border-color: var(--border); opacity: 0.5; margin: 16px 0;">
         <div class="hint">
-          Tip: after you submit, copy your <span class="pill">Ticket ID</span> and use the Track page anytime.
+          <b>Совет:</b> После отправки скопируйте ваш <span class="pill">ID тикета</span> и используйте страницу отслеживания в любое время.
         </div>
       </aside>
     </div>
-
-    
   </div>
 
   <script src="assistant.js" defer></script>
@@ -112,7 +112,7 @@
 
       try {
         btn.disabled = true;
-        btn.textContent = 'Submitting...';
+        btn.textContent = 'Отправка...';
 
         const response = await fetch(`${BASE_URL}/api/complaints`, {
           method: 'POST',
@@ -124,23 +124,23 @@
         if (response.ok) {
           msg.style.display = 'block';
           msg.className = 'msg ok';
-          msg.textContent = `Submitted successfully. Your Ticket ID: ${result.ticketId}`;
+          msg.textContent = `Успешно отправлено. Ваш ID тикета: ${result.ticketId}`;
           form.reset();
         } else {
           msg.style.display = 'block';
           msg.className = 'msg err';
-          msg.textContent = `Error: ${result.message || 'Request failed'}`;
+          msg.textContent = `Ошибка: ${result.message || 'Не удалось отправить запрос'}`;
         }
       } catch (err) {
-        console.error('Error submitting form:', err);
+        console.error('Ошибка при отправке формы:', err);
         msg.style.display = 'block';
         msg.className = 'msg err';
-        msg.textContent = 'Submission failed: network or server error.';
+        msg.textContent = 'Ошибка отправки: проблема с сетью или сервером.';
       } finally {
         btn.disabled = false;
-        btn.textContent = 'Submit';
+        btn.textContent = 'Отправить жалобу';
       }
     });
   </script>
 </body>
-</html>
+</html> 

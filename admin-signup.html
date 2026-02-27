@@ -1,21 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin Sign-Up</title>
+  <title>Регистрация администратора</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="container">
     <div class="nav">
       <div class="brand">
-        <b>Create admin</b>
-        <span>Admins can log in and manage complaints.</span>
+        <b>Создать админа</b>
+        <span>Администраторы могут входить и управлять жалобами.</span>
       </div>
       <div class="nav-actions">
-        <button class="btn" onclick="window.location.href='index.html'">Home</button>
-        <button class="btn" onclick="window.location.href='admin.html'">Login</button>
+        <button class="btn" onclick="window.location.href='index.html'">Главная</button>
+        <button class="btn" onclick="window.location.href='admin.html'">Вход</button>
       </div>
     </div>
 
@@ -24,8 +24,8 @@
         <form id="adminSignupForm" class="form">
           <div class="row">
             <div>
-              <label for="name">Full name</label>
-              <input id="name" type="text" name="name" placeholder="Alex Admin" required />
+              <label for="name">Полное имя</label>
+              <input id="name" type="text" name="name" placeholder="Алексей Админов" required />
             </div>
             <div>
               <label for="email">Email</label>
@@ -35,21 +35,21 @@
 
           <div class="row">
             <div>
-              <label for="password">Password</label>
+              <label for="password">Пароль</label>
               <input id="password" type="password" name="password" placeholder="••••••••" required />
             </div>
             <div>
-              <label for="institution">Institution</label>
+              <label for="institution">Учреждение (Сфера)</label>
               <select id="institution" name="institution" required>
-                <option value="">Select</option>
-                <option value="Health">Health</option>
-                <option value="Education">Education</option>
-                <option value="Sport">Sport</option>
+                <option value="">Выберите</option>
+                <option value="Health">Здравоохранение</option>
+                <option value="Education">Образование</option>
+                <option value="Sport">Спорт</option>
               </select>
             </div>
           </div>
 
-          <button id="signupBtn" class="btn primary block" type="submit">Sign up</button>
+          <button id="signupBtn" class="btn primary block" type="submit">Зарегистрироваться</button>
           <div id="errorMessage" class="msg" style="display:none;"></div>
         </form>
       </section>
@@ -74,7 +74,7 @@
 
       try {
         btn.disabled = true;
-        btn.textContent = 'Creating...';
+        btn.textContent = 'Создание...';
 
         const response = await fetch(`${BASE_URL}/api/auth/signup`, {
           method: 'POST',
@@ -92,21 +92,21 @@
         const result = await response.json();
 
         if (response.ok) {
-          alert('✅ Admin signed up successfully! Please login.');
+          alert('✅ Администратор успешно зарегистрирован! Пожалуйста, войдите в систему.');
           window.location.href = 'admin.html';
         } else {
           msg.style.display = 'block';
           msg.className = 'msg err';
-          msg.textContent = `Error: ${result.message || 'Request failed'}`;
+          msg.textContent = `Ошибка: ${result.message || 'Не удалось выполнить запрос'}`;
         }
       } catch (err) {
-        console.error('Error during signup:', err);
+        console.error('Ошибка при регистрации:', err);
         msg.style.display = 'block';
         msg.className = 'msg err';
-        msg.textContent = 'Network error, please try again later.';
+        msg.textContent = 'Ошибка сети, пожалуйста, попробуйте позже.';
       } finally {
         btn.disabled = false;
-        btn.textContent = 'Sign up';
+        btn.textContent = 'Зарегистрироваться';
       }
     });
   </script>

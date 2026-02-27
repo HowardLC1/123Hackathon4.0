@@ -54,3 +54,5 @@ process.on('SIGINT', () => {
     process.exit(0);
   });
 });
+
+console.log("DB_URL:", process.env.DB_URL);

@@ -1,30 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Dashboard - Complaints</title>
+  <title>Панель администратора - Жалобы</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="container">
-    <!-- Login Section -->
     <div id="loginSection">
       <div class="nav">
         <div class="brand">
-          <b>Admin</b>
-          <span>Log in to manage complaints for your institution.</span>
+          <b>Админ</b>
+          <span>Войдите для управления жалобами вашего учреждения.</span>
         </div>
         <div class="nav-actions">
-          <button class="btn" onclick="window.location.href='index.html'">Home</button>
-          <button class="btn" onclick="window.location.href='admin-signup.html'">Create admin</button>
+          <button class="btn" onclick="window.location.href='index.html'">Главная</button>
+          <button class="btn" onclick="window.location.href='admin-signup.html'">Создать админа</button>
         </div>
       </div>
 
       <div class="grid" style="grid-template-columns:1fr;">
         <section class="card pad">
-          <h3 class="title">Admin login</h3>
-          <p class="subtitle">Use the email/password you registered.</p>
+          <h3 class="title">Вход для администратора</h3>
+          <p class="subtitle">Используйте email/пароль, указанные при регистрации.</p>
           <div class="form">
             <div class="row">
               <div>
@@ -32,49 +31,48 @@
                 <input type="email" id="email" placeholder="admin@example.com" />
               </div>
               <div>
-                <label for="password">Password</label>
+                <label for="password">Пароль</label>
                 <input type="password" id="password" placeholder="••••••••" />
               </div>
             </div>
-            <button id="loginBtn" class="btn primary block" onclick="adminLogin()">Login</button>
+            <button id="loginBtn" class="btn primary block" onclick="adminLogin()">Войти</button>
             <div id="loginMessage" class="msg" style="display:none;"></div>
           </div>
         </section>
       </div>
     </div>
 
-    <!-- Dashboard Section -->
     <div id="dashboard" style="display: none;">
       <div class="nav">
         <div class="brand">
-          <b>Dashboard</b>
-          <span>Update status and add response notes.</span>
+          <b>Панель управления</b>
+          <span>Обновляйте статусы и добавляйте ответы к обращениям.</span>
         </div>
         <div class="nav-actions">
-          <button class="btn danger" onclick="window.location.href='admin.html'">Logout</button>
+          <button class="btn danger" onclick="window.location.href='admin.html'">Выйти</button>
         </div>
       </div>
 
       <div class="card pad" style="margin-top:16px;">
-        <h2 class="title" style="margin-bottom:10px;">Complaints</h2>
+        <h2 class="title" style="margin-bottom:10px;">Жалобы</h2>
         <div class="table-wrap">
           <table id="complaintsTable">
             <thead>
               <tr>
-                <th>Ticket</th>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Status</th>
-                <th>Submitted</th>
-                <th>Update status</th>
-                <th>Response note</th>
-                <th>Submit</th>
+                <th>Тикет</th>
+                <th>Заголовок</th>
+                <th>Категория</th>
+                <th>Статус</th>
+                <th>Подано</th>
+                <th>Изменить статус</th>
+                <th>Ответ</th>
+                <th>Действие</th>
               </tr>
             </thead>
             <tbody></tbody>
           </table>
         </div>
-        <div class="hint" style="margin-top:10px;">Tip: you can update status and response note independently.</div>
+        <div class="hint" style="margin-top:10px;">Совет: вы можете обновлять статус и текст ответа независимо друг от друга.</div>
       </div>
     </div>
   </div>
@@ -97,7 +95,7 @@
 
     try {
       btn.disabled = true;
-      btn.textContent = 'Signing in...';
+      btn.textContent = 'Вход...';
       const res = await fetch(`${BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -108,23 +106,23 @@
       if (res.ok) {
         token = data.token;
         msg.style.display = 'block';
-        msg.textContent = 'Login successful.';
+        msg.textContent = 'Вход выполнен успешно.';
         msg.className = 'msg ok';
         document.getElementById('loginSection').style.display = 'none';
         document.getElementById('dashboard').style.display = 'block';
         fetchComplaints();
       } else {
         msg.style.display = 'block';
-        msg.textContent = data.message ? String(data.message) : 'Login failed';
+        msg.textContent = data.message ? String(data.message) : 'Ошибка входа';
         msg.className = 'msg err';
       }
     } catch (err) {
       msg.style.display = 'block';
-      msg.textContent = 'Network error.';
+      msg.textContent = 'Ошибка сети.';
       msg.className = 'msg err';
     } finally {
       btn.disabled = false;
-      btn.textContent = 'Login';
+      btn.textContent = 'Войти';
     }
   }
 
@@ -138,40 +136,48 @@
       });
 
       if (!res.ok) {
-        alert('Session expired or unauthorized. Please log in again.');
+        alert('Сессия истекла или доступ запрещен. Пожалуйста, войдите снова.');
         location.reload();
         return;
       }
 
       const complaints = await res.json();
       complaints.forEach(c => {
+        // Перевод статусов для отображения
+        const statusMap = {
+          'Pending': 'В ожидании',
+          'In Progress': 'В работе',
+          'Resolved': 'Решено'
+        };
+        const displayStatus = statusMap[c.status] || c.status;
+
         const row = document.createElement('tr');
         row.innerHTML = `
           <td>${c.ticketId}</td>
-          <td>${c.title || 'N/A'}</td>
+          <td>${c.title || '—'}</td>
           <td>${c.category}</td>
-          <td>${c.status}</td>
-          <td>${new Date(c.submittedAt).toLocaleString()}</td>
+          <td>${displayStatus}</td>
+          <td>${new Date(c.submittedAt).toLocaleString('ru-RU')}</td>
           <td>
             <select onchange="updateStatus('${c.ticketId}', this.value)">
-              <option value="">-- Change --</option>
-              <option value="Pending">Pending</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Resolved">Resolved</option>
+              <option value="">-- Изменить --</option>
+              <option value="Pending">В ожидании</option>
+              <option value="In Progress">В работе</option>
+              <option value="Resolved">Решено</option>
             </select>
           </td>
           <td>
-            <textarea id="note-${c.ticketId}" rows="2" placeholder="Write a response...">${c.responseNote || ''}</textarea>
+            <textarea id="note-${c.ticketId}" rows="2" placeholder="Напишите ответ...">${c.responseNote || ''}</textarea>
           </td>
           <td>
-            <button class="btn small primary" onclick="submitResponse('${c.ticketId}')">Submit</button>
+            <button class="btn small primary" onclick="submitResponse('${c.ticketId}')">Отправить</button>
           </td>
         `;
         tbody.appendChild(row);
       });
     } catch (err) {
-      console.error('Error loading complaints:', err);
-      alert('❌ Failed to load complaints.');
+      console.error('Ошибка при загрузке жалоб:', err);
+      alert('❌ Не удалось загрузить список жалоб.');
     }
   }
 
@@ -179,7 +185,7 @@
     if (!newStatus) return;
 
     if (!token) {
-      alert('❌ No valid session. Please log in again.');
+      alert('❌ Сессия недействительна. Войдите снова.');
       return;
     }
 
@@ -194,14 +200,14 @@
       });
 
       if (res.ok) {
-        alert(`✅ Status updated to "${newStatus}"`);
+        alert(`✅ Статус обновлен на "${newStatus}"`);
         fetchComplaints();
       } else {
         const data = await res.json();
-        alert(`❌ Failed to update: ${data.message}`);
+        alert(`❌ Ошибка обновления: ${data.message}`);
       }
     } catch (err) {
-      alert('❌ Network/server error.');
+      alert('❌ Ошибка сети/сервера.');
       console.error(err);
     }
   }
@@ -211,7 +217,7 @@
     const responseNote = noteTextarea.value;
 
     if (!responseNote.trim()) {
-      alert('❌ Please enter a response note before submitting.');
+      alert('❌ Пожалуйста, введите текст ответа перед отправкой.');
       return;
     }
 
@@ -228,14 +234,14 @@
       const data = await res.json();
 
       if (res.ok) {
-        alert(`✅ Response note submitted.`);
+        alert(`✅ Ответ успешно сохранен.`);
         fetchComplaints();
       } else {
-        alert(`❌ Failed to submit: ${data.message}`);
+        alert(`❌ Ошибка сохранения: ${data.message}`);
       }
     } catch (err) {
-      console.error('Network error:', err);
-      alert('❌ Network/server error.');
+      console.error('Ошибка сети:', err);
+      alert('❌ Ошибка сети/сервера.');
     }
   }
 </script>
