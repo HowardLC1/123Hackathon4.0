@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Sign-Up</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="brand">
+        <b>Create admin</b>
+        <span>Admins can log in and manage complaints.</span>
+      </div>
+      <div class="nav-actions">
+        <button class="btn" onclick="window.location.href='index.html'">Home</button>
+        <button class="btn" onclick="window.location.href='admin.html'">Login</button>
+      </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1fr;">
+      <section class="card pad">
+        <form id="adminSignupForm" class="form">
+          <div class="row">
+            <div>
+              <label for="name">Full name</label>
+              <input id="name" type="text" name="name" placeholder="Alex Admin" required />
+            </div>
+            <div>
+              <label for="email">Email</label>
+              <input id="email" type="email" name="email" placeholder="admin@example.com" required />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="password">Password</label>
+              <input id="password" type="password" name="password" placeholder="••••••••" required />
+            </div>
+            <div>
+              <label for="institution">Institution</label>
+              <select id="institution" name="institution" required>
+                <option value="">Select</option>
+                <option value="Health">Health</option>
+                <option value="Education">Education</option>
+                <option value="Sport">Sport</option>
+              </select>
+            </div>
+          </div>
+
+          <button id="signupBtn" class="btn primary block" type="submit">Sign up</button>
+          <div id="errorMessage" class="msg" style="display:none;"></div>
+        </form>
+      </section>
+    </div>
+  </div>
+
+  <script src="assistant.js" defer></script>
+  <script>
+    document.getElementById('adminSignupForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const form = document.getElementById('adminSignupForm');
+      const formData = new FormData(form);
+      const btn = document.getElementById('signupBtn');
+      const msg = document.getElementById('errorMessage');
+      msg.style.display = 'none';
+      msg.className = 'msg';
+
+      const BASE_URL = (window.location.protocol === 'file:')
+        ? 'http://localhost:4000'
+        : window.location.origin;
+
+      try {
+        btn.disabled = true;
+        btn.textContent = 'Creating...';
+
+        const response = await fetch(`${BASE_URL}/api/auth/signup`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: formData.get('name'),
+            email: formData.get('email'),
+            password: formData.get('password'),
+            institution: formData.get('institution')
+          }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          alert('✅ Admin signed up successfully! Please login.');
+          window.location.href = 'admin.html';
+        } else {
+          msg.style.display = 'block';
+          msg.className = 'msg err';
+          msg.textContent = `Error: ${result.message || 'Request failed'}`;
+        }
+      } catch (err) {
+        console.error('Error during signup:', err);
+        msg.style.display = 'block';
+        msg.className = 'msg err';
+        msg.textContent = 'Network error, please try again later.';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Sign up';
+      }
+    });
+  </script>
+</body>
+</html>

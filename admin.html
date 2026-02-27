@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard - Complaints</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <!-- Login Section -->
+    <div id="loginSection">
+      <div class="nav">
+        <div class="brand">
+          <b>Admin</b>
+          <span>Log in to manage complaints for your institution.</span>
+        </div>
+        <div class="nav-actions">
+          <button class="btn" onclick="window.location.href='index.html'">Home</button>
+          <button class="btn" onclick="window.location.href='admin-signup.html'">Create admin</button>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns:1fr;">
+        <section class="card pad">
+          <h3 class="title">Admin login</h3>
+          <p class="subtitle">Use the email/password you registered.</p>
+          <div class="form">
+            <div class="row">
+              <div>
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="admin@example.com" />
+              </div>
+              <div>
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="••••••••" />
+              </div>
+            </div>
+            <button id="loginBtn" class="btn primary block" onclick="adminLogin()">Login</button>
+            <div id="loginMessage" class="msg" style="display:none;"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboard" style="display: none;">
+      <div class="nav">
+        <div class="brand">
+          <b>Dashboard</b>
+          <span>Update status and add response notes.</span>
+        </div>
+        <div class="nav-actions">
+          <button class="btn danger" onclick="window.location.href='admin.html'">Logout</button>
+        </div>
+      </div>
+
+      <div class="card pad" style="margin-top:16px;">
+        <h2 class="title" style="margin-bottom:10px;">Complaints</h2>
+        <div class="table-wrap">
+          <table id="complaintsTable">
+            <thead>
+              <tr>
+                <th>Ticket</th>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Submitted</th>
+                <th>Update status</th>
+                <th>Response note</th>
+                <th>Submit</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="hint" style="margin-top:10px;">Tip: you can update status and response note independently.</div>
+      </div>
+    </div>
+  </div>
+
+<script src="assistant.js" defer></script>
+<script>
+  const BASE_URL = (window.location.protocol === 'file:')
+    ? 'http://localhost:4000'
+    : window.location.origin;
+
+  let token = '';
+
+  async function adminLogin() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const msg = document.getElementById('loginMessage');
+    const btn = document.getElementById('loginBtn');
+    msg.style.display = 'none';
+    msg.className = 'msg';
+
+    try {
+      btn.disabled = true;
+      btn.textContent = 'Signing in...';
+      const res = await fetch(`${BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        token = data.token;
+        msg.style.display = 'block';
+        msg.textContent = 'Login successful.';
+        msg.className = 'msg ok';
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        fetchComplaints();
+      } else {
+        msg.style.display = 'block';
+        msg.textContent = data.message ? String(data.message) : 'Login failed';
+        msg.className = 'msg err';
+      }
+    } catch (err) {
+      msg.style.display = 'block';
+      msg.textContent = 'Network error.';
+      msg.className = 'msg err';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Login';
+    }
+  }
+
+  async function fetchComplaints() {
+    const tbody = document.querySelector('#complaintsTable tbody');
+    tbody.innerHTML = '';
+
+    try {
+      const res = await fetch(`${BASE_URL}/api/complaints/all`, {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+
+      if (!res.ok) {
+        alert('Session expired or unauthorized. Please log in again.');
+        location.reload();
+        return;
+      }
+
+      const complaints = await res.json();
+      complaints.forEach(c => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${c.ticketId}</td>
+          <td>${c.title || 'N/A'}</td>
+          <td>${c.category}</td>
+          <td>${c.status}</td>
+          <td>${new Date(c.submittedAt).toLocaleString()}</td>
+          <td>
+            <select onchange="updateStatus('${c.ticketId}', this.value)">
+              <option value="">-- Change --</option>
+              <option value="Pending">Pending</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+          </td>
+          <td>
+            <textarea id="note-${c.ticketId}" rows="2" placeholder="Write a response...">${c.responseNote || ''}</textarea>
+          </td>
+          <td>
+            <button class="btn small primary" onclick="submitResponse('${c.ticketId}')">Submit</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    } catch (err) {
+      console.error('Error loading complaints:', err);
+      alert('❌ Failed to load complaints.');
+    }
+  }
+
+  async function updateStatus(ticketId, newStatus) {
+    if (!newStatus) return;
+
+    if (!token) {
+      alert('❌ No valid session. Please log in again.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${BASE_URL}/api/complaints/status/${ticketId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (res.ok) {
+        alert(`✅ Status updated to "${newStatus}"`);
+        fetchComplaints();
+      } else {
+        const data = await res.json();
+        alert(`❌ Failed to update: ${data.message}`);
+      }
+    } catch (err) {
+      alert('❌ Network/server error.');
+      console.error(err);
+    }
+  }
+
+  async function submitResponse(ticketId) {
+    const noteTextarea = document.getElementById(`note-${ticketId}`);
+    const responseNote = noteTextarea.value;
+
+    if (!responseNote.trim()) {
+      alert('❌ Please enter a response note before submitting.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${BASE_URL}/api/complaints/response/${ticketId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ responseNote })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert(`✅ Response note submitted.`);
+        fetchComplaints();
+      } else {
+        alert(`❌ Failed to submit: ${data.message}`);
+      }
+    } catch (err) {
+      console.error('Network error:', err);
+      alert('❌ Network/server error.');
+    }
+  }
+</script>
+</body>
+</html>

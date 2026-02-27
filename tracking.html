@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Track Complaint Status</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+
+    <div class="nav">
+      <div class="brand">
+        <b>Track your complaint</b>
+        <span>Enter your Ticket ID to see status and any response.</span>
+      </div>
+      <div class="nav-actions">
+        <button class="btn" onclick="window.location.href='index.html'">Home</button>
+      </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1fr;">
+      <section class="card pad">
+        <form id="trackingForm" class="form">
+          <div>
+            <label for="ticketId">Ticket ID</label>
+            <input type="text" id="ticketId" placeholder="TKT1700000000000-1234" required />
+          </div>
+          <button id="trackBtn" class="btn primary block" type="submit">Track</button>
+          <div id="statusResult" class="msg" style="display:none;"></div>
+        </form>
+      </section>
+    </div>
+
+  </div>
+
+  <script src="assistant.js" defer></script>
+  <script>
+    const BASE_URL = (window.location.protocol === 'file:')
+      ? 'http://localhost:4000'
+      : window.location.origin;
+
+    document.getElementById('trackingForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const ticketId = document.getElementById('ticketId').value.trim();
+      const statusDiv = document.getElementById('statusResult');
+      const btn = document.getElementById('trackBtn');
+      statusDiv.style.display = 'none';
+      statusDiv.className = 'msg';
+
+      try {
+        btn.disabled = true;
+        btn.textContent = 'Loading...';
+
+        const response = await fetch(`${BASE_URL}/api/complaints/status/${ticketId}`);
+        const contentType = response.headers.get("content-type");
+
+        if (!response.ok) {
+          const message = await response.text();
+          throw new Error(`Error ${response.status}: ${message}`);
+        }
+
+        if (contentType && contentType.includes("application/json")) {
+          const result = await response.json();
+          statusDiv.style.display = 'block';
+          statusDiv.className = 'msg ok';
+          statusDiv.innerHTML = `
+            <div><span class="pill">Ticket</span> ${result.ticketId}</div>
+            <div style="margin-top:6px;"><span class="pill">Status</span> ${result.status}</div>
+            <div style="margin-top:6px;"><span class="pill">Category</span> ${result.category}</div>
+            <div style="margin-top:6px;"><span class="pill">Submitted</span> ${new Date(result.submittedAt).toLocaleString()}</div>
+            ${result.responseNote ? `<div style="margin-top:10px;"><span class="pill">Response</span><div style="margin-top:6px; color:rgba(234,240,255,.85)">${result.responseNote}</div></div>` : ``}
+          `;
+        } else {
+          const message = await response.text();
+          throw new Error(`Unexpected response format: ${message}`);
+        }
+      } catch (error) {
+        console.error(error);
+        statusDiv.style.display = 'block';
+        statusDiv.className = 'msg err';
+        statusDiv.textContent = error.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Track';
+      }
+    });
+  </script>
+</body>
+</html>

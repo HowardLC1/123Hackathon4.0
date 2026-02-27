@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Citizen Complaint Submission</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="brand">
+        <b>Citizen Engagement</b>
+        <span>Submit a complaint, track progress, get responses.</span>
+      </div>
+      <div class="nav-actions">
+        <button class="btn" onclick="window.location.href='tracking.html'">Track</button>
+        <button class="btn" onclick="window.location.href='admin.html'">Admin</button>
+        <button class="btn" onclick="window.location.href='admin-signup.html'">Create admin</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <section class="card pad">
+        <h2 class="title">Submit a complaint</h2>
+        <p class="subtitle">You’ll receive a Ticket ID for tracking.</p>
+
+        <form id="complaintForm" class="form" enctype="multipart/form-data" method="POST">
+          <div class="row">
+            <div>
+              <label for="fullName">Full name</label>
+              <input id="fullName" type="text" name="fullName" placeholder="Jane Doe" required />
+            </div>
+            <div>
+              <label for="email">Email</label>
+              <input id="email" type="email" name="email" placeholder="jane@example.com" required />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="phone">Phone (optional)</label>
+              <input id="phone" type="text" name="phone" placeholder="+1 555 000 0000" />
+            </div>
+            <div>
+              <label for="location">Location (optional)</label>
+              <input id="location" type="text" name="location" placeholder="City, District" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="category">Category</label>
+              <select id="category" name="category" required>
+                <option value="">Select category</option>
+                <option value="Health">Health</option>
+                <option value="Education">Education</option>
+                <option value="Sport">Sport</option>
+              </select>
+            </div>
+            <div>
+              <label for="title">Title (optional)</label>
+              <input id="title" type="text" name="title" placeholder="Short summary" />
+            </div>
+          </div>
+
+          <div>
+            <label for="description">Description</label>
+            <textarea id="description" name="description" placeholder="Describe what happened, where, and when." required></textarea>
+          </div>
+
+          <div>
+            <label for="attachment">Attachment (optional)</label>
+            <input id="attachment" type="file" name="attachment" />
+            <div class="hint">Photos or documents help resolve complaints faster.</div>
+          </div>
+
+          <button id="submitBtn" class="btn primary block" type="submit">Submit</button>
+          <div id="submitMsg" class="msg" style="display:none;"></div>
+        </form>
+      </section>
+
+      <aside class="card pad">
+        <h3 class="title">How it works</h3>
+        <p class="subtitle">
+          Your complaint is routed to the right agency/department. Admins can update status and add a response note.
+        </p>
+        <div class="hint">
+          Tip: after you submit, copy your <span class="pill">Ticket ID</span> and use the Track page anytime.
+        </div>
+      </aside>
+    </div>
+
+    
+  </div>
+
+  <script src="assistant.js" defer></script>
+  <script>
+    const BASE_URL = (window.location.protocol === 'file:')
+      ? 'http://localhost:4000'
+      : window.location.origin;
+
+    document.getElementById('complaintForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const form = document.getElementById('complaintForm');
+      const formData = new FormData(form);
+      const btn = document.getElementById('submitBtn');
+      const msg = document.getElementById('submitMsg');
+      msg.style.display = 'none';
+      msg.className = 'msg';
+
+      try {
+        btn.disabled = true;
+        btn.textContent = 'Submitting...';
+
+        const response = await fetch(`${BASE_URL}/api/complaints`, {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          msg.style.display = 'block';
+          msg.className = 'msg ok';
+          msg.textContent = `Submitted successfully. Your Ticket ID: ${result.ticketId}`;
+          form.reset();
+        } else {
+          msg.style.display = 'block';
+          msg.className = 'msg err';
+          msg.textContent = `Error: ${result.message || 'Request failed'}`;
+        }
+      } catch (err) {
+        console.error('Error submitting form:', err);
+        msg.style.display = 'block';
+        msg.className = 'msg err';
+        msg.textContent = 'Submission failed: network or server error.';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Submit';
+      }
+    });
+  </script>
+</body>
+</html>
