@@ -30,8 +30,8 @@
     const panel = createEl('div', { class: 'ai-assistant-panel', 'aria-hidden': 'true' });
     const header = createEl('div', { class: 'ai-assistant-header' });
     header.innerHTML =
-      '<div class="ai-assistant-title">Ассистент</div>' +
-      '<div class="ai-assistant-subtitle">Спросите о работе системы или подаче жалоб.</div>';
+      '<div class="ai-assistant-title">Ассистент по Петропавловску</div>' +
+      '<div class="ai-assistant-subtitle">Задайте вопрос о городе Петропавловск (СКО, Казахстан).</div>';
 
     const closeBtn = createEl('button', {
       class: 'ai-assistant-close',
@@ -130,7 +130,7 @@
 
     addMessage(
       'bot',
-      'Здравствуйте! Я ваш ИИ-помощник. Спросите меня, как пользоваться этой страницей или как работает система жалоб.'
+      'Здравствуйте! Я ваш ИИ-помощник по городу Петропавловск (Северо-Казахстанская область, Казахстан). Спросите меня об истории, достопримечательностях, транспорте, услугах или инфраструктуре города.'
     );
   }
 
